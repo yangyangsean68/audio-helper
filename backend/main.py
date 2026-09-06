@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message
 app = FastAPI(
     title="语音约碰面地点",
     version="0.1.0",
-    description="当前提供健康检查与录音上传。",
+    description="当前提供健康检查、录音上传、语音识别与信息提取。",
 )
 
 
@@ -25,6 +25,10 @@ def _request_id(request: Request) -> str:
 
 
 def _stage_from_path(path: str) -> str:
+    if path.rstrip("/").endswith("/extract"):
+        return "extract"
+    if path.rstrip("/").endswith("/asr"):
+        return "asr"
     if path.rstrip("/").endswith("/upload"):
         return "upload"
     if path.rstrip("/").endswith("/health"):
@@ -64,7 +68,7 @@ async def validation_error_handler(
         request_id=_request_id(request),
         error=ErrorDetail(
             code="VALIDATION_ERROR",
-            message="请求缺少文件或字段类型不正确。",
+            message="请求缺少字段或字段类型不正确。",
             stage=_stage_from_path(request.url.path),
         ),
     )

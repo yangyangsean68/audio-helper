@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     min_audio_seconds: float = 1.0
     max_audio_seconds: float = 60.0
     ffprobe_timeout_seconds: float = 6.0
+    asr_timeout_seconds: float = 22.0
+    max_asr_base64_bytes: int = 10 * 1024 * 1024
+    extract_timeout_seconds: float = 16.0
 
 
 settings = Settings()
