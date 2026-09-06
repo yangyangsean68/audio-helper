@@ -42,6 +42,9 @@ class Settings(BaseSettings):
 
     storage_dir: Path = BACKEND_DIR / "storage"
     audio_ttl_hours: int = 24
+    search_timeout_seconds: float = 45.0
+    amap_timeout_seconds: float = 12.0
+    amap_connect_timeout_seconds: float = 8.0
     max_upload_bytes: int = 5 * 1024 * 1024
     min_audio_seconds: float = 1.0
     max_audio_seconds: float = 60.0
@@ -49,6 +52,9 @@ class Settings(BaseSettings):
     asr_timeout_seconds: float = 22.0
     max_asr_base64_bytes: int = 10 * 1024 * 1024
     extract_timeout_seconds: float = 16.0
+    recommend_timeout_seconds: float = 10.0
+    tts_timeout_seconds: float = 12.0
+    tts_download_timeout_seconds: float = 5.0
 
 
 settings = Settings()

@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import logging
 import re
@@ -6,6 +7,7 @@ import httpx
 
 from config import settings
 from errors import AppError
+from services.http_ipv4 import ipv4_transport
 
 logger = logging.getLogger(__name__)
 STAGE = "asr"
@@ -95,15 +97,20 @@ async def transcribe(audio_bytes: bytes, mime_type: str) -> str:
         },
     }
 
-    timeout = httpx.Timeout(settings.asr_timeout_seconds, connect=10.0)
+    timeout = httpx.Timeout(settings.asr_timeout_seconds, connect=5.0)
     try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.post(
-                settings.bailian_asr_url,
-                headers=headers,
-                json=body,
+        async with httpx.AsyncClient(
+            timeout=timeout, transport=ipv4_transport()
+        ) as client:
+            response = await asyncio.wait_for(
+                client.post(
+                    settings.bailian_asr_url,
+                    headers=headers,
+                    json=body,
+                ),
+                timeout=settings.asr_timeout_seconds,
             )
-    except httpx.TimeoutException as exc:
+    except (httpx.TimeoutException, TimeoutError, asyncio.TimeoutError) as exc:
         logger.info("stage=%s error_code=UPSTREAM_TIMEOUT reason=timeout", STAGE)
         raise AppError(
             504,

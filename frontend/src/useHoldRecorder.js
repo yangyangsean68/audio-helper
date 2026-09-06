@@ -23,9 +23,11 @@ function messageForGetUserMediaError(error) {
   return "录制失败，请重试。";
 }
 
-export function useHoldRecorder() {
+export function useHoldRecorder({ onRecordingComplete } = {}) {
   const mimeType = pickSupportedMimeType();
   const supported = Boolean(mimeType);
+  const onCompleteRef = useRef(onRecordingComplete);
+  onCompleteRef.current = onRecordingComplete;
 
   const [phase, setPhase] = useState("idle");
   const [error, setError] = useState(
@@ -123,12 +125,14 @@ export function useHoldRecorder() {
       }
 
       setError(null);
-      replaceResult({
+      const recording = {
         blob,
         mimeType: blob.type || mimeType,
         durationSec,
         sizeBytes: blob.size,
-      });
+      };
+      replaceResult(recording);
+      onCompleteRef.current?.(recording);
     },
     [clearTimers, mimeType, releaseMicrophone, replaceResult],
   );
