@@ -1,8 +1,10 @@
 import json
 import math
+import os
 import shutil
 import subprocess
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 from config import settings
@@ -18,6 +20,48 @@ class ProbeResult:
     duration_sec: float
 
 
+def _windows_path_dirs() -> list[Path]:
+    dirs: list[Path] = []
+    try:
+        import winreg
+
+        for hive, subkey in (
+            (winreg.HKEY_CURRENT_USER, r"Environment"),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"),
+        ):
+            try:
+                with winreg.OpenKey(hive, subkey) as key:
+                    value, _ = winreg.QueryValueEx(key, "Path")
+            except OSError:
+                continue
+            for item in str(value).split(";"):
+                item = item.strip()
+                if item:
+                    dirs.append(Path(os.path.expandvars(item)))
+    except ImportError:
+        pass
+    return dirs
+
+
+@lru_cache(maxsize=1)
+def _ffprobe_executable() -> str | None:
+    found = shutil.which("ffprobe") or shutil.which("ffprobe.exe")
+    if found:
+        return found
+    candidates: list[Path] = []
+    for directory in _windows_path_dirs():
+        candidates.append(directory / "ffprobe.exe")
+        candidates.append(directory / "ffprobe")
+    local_app = os.environ.get("LOCALAPPDATA", "")
+    if local_app:
+        winget = Path(local_app) / "Microsoft" / "WinGet" / "Packages"
+        candidates.extend(winget.glob("Gyan.FFmpeg*/ffmpeg-*/bin/ffprobe.exe"))
+    for path in candidates:
+        if path.is_file():
+            return str(path)
+    return None
+
+
 def _parse_duration(value: object) -> float | None:
     if value in (None, "", "N/A", "n/a", "nan"):
         return None
@@ -31,7 +75,7 @@ def _parse_duration(value: object) -> float | None:
 
 
 def _run_ffprobe(args: list[str]) -> dict:
-    ffprobe = shutil.which("ffprobe")
+    ffprobe = _ffprobe_executable()
     if not ffprobe:
         raise AppError(
             502,
