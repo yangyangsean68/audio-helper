@@ -40,5 +40,12 @@ class Settings(BaseSettings):
     amap_geo_url: str = "https://restapi.amap.com/v3/geocode/geo"
     amap_around_url: str = "https://restapi.amap.com/v3/place/around"
 
+    storage_dir: Path = BACKEND_DIR / "storage"
+    audio_ttl_hours: int = 24
+    max_upload_bytes: int = 5 * 1024 * 1024
+    min_audio_seconds: float = 1.0
+    max_audio_seconds: float = 60.0
+    ffprobe_timeout_seconds: float = 6.0
+
 
 settings = Settings()
