@@ -1,22 +1,37 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import CityField from "./components/CityField.jsx";
+import ExtractPanel from "./components/ExtractPanel.jsx";
+import PlayerBar from "./components/PlayerBar.jsx";
 import RecordButton from "./components/RecordButton.jsx";
 import RecordingPreview from "./components/RecordingPreview.jsx";
+import ShopList from "./components/ShopList.jsx";
+import StatusBar from "./components/StatusBar.jsx";
+import TranscriptPanel from "./components/TranscriptPanel.jsx";
 import { useHoldRecorder } from "./useHoldRecorder.js";
+import { useMeetingPipeline } from "./useMeetingPipeline.js";
 
 export default function App() {
   const [city, setCity] = useState("杭州");
-  const recorder = useHoldRecorder();
+  const {
+    healthStatus,
+    stage,
+    inFlight,
+    errorText,
+    round,
+    needsManualPlay,
+    audioLoadError,
+    runPipeline,
+    playManually,
+  } = useMeetingPipeline();
 
-  const statusText = recorder.phase === "recording"
-    ? "录音中"
-    : recorder.phase === "requesting"
-      ? "正在申请麦克风"
-      : recorder.phase === "stopping"
-        ? "正在结束录音"
-        : recorder.result
-          ? "录音完成，可试听或下载"
-          : "准备录音";
+  const onRecordingComplete = useCallback(
+    (recording) => {
+      runPipeline(recording, city);
+    },
+    [city, runPipeline],
+  );
+
+  const recorder = useHoldRecorder({ onRecordingComplete });
 
   return (
     <main className="page">
@@ -25,12 +40,18 @@ export default function App() {
         说出两人所在地点，系统会在同一座城市内推荐中间附近的碰面店铺。
       </p>
       <p className="note">
-        中点只表示地理位置大致居中，不代表两人出行时间相同。本轮只做本地录音，不会上传或搜店。
+        中点只表示地理位置大致居中，不代表两人出行时间相同。店铺距离只表示距离中点。
       </p>
 
-      <CityField value={city} onChange={setCity} />
+      <CityField value={city} onChange={setCity} disabled={inFlight} />
 
-      <p className="status">状态：{statusText}</p>
+      <StatusBar
+        recorderPhase={recorder.phase}
+        elapsedSec={recorder.elapsedSec}
+        pipelineStage={stage}
+        inFlight={inFlight}
+        healthStatus={healthStatus}
+      />
       {recorder.mimeType ? (
         <p className="note">将使用格式：{recorder.mimeType}</p>
       ) : null}
@@ -38,12 +59,28 @@ export default function App() {
       <RecordButton
         phase={recorder.phase}
         elapsedSec={recorder.elapsedSec}
-        buttonProps={recorder.buttonProps}
+        busy={inFlight}
+        buttonProps={{
+          ...recorder.buttonProps,
+          disabled: recorder.buttonProps.disabled || inFlight,
+        }}
       />
 
       {recorder.error ? <p className="error">{recorder.error}</p> : null}
+      {errorText ? <p className="error error-multiline">{errorText}</p> : null}
 
       <RecordingPreview result={recorder.result} />
+      <TranscriptPanel text={round.transcript} />
+      <ExtractPanel extract={round.extract} />
+      <ShopList pois={round.pois} midpoint={round.midpoint} />
+      <PlayerBar
+        replyText={round.replyText}
+        warning={round.warning}
+        audioUrl={round.audioUrl}
+        needsManualPlay={needsManualPlay}
+        audioLoadError={audioLoadError}
+        onPlay={playManually}
+      />
     </main>
   );
 }

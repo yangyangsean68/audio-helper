@@ -16,7 +16,7 @@ export default function RecordingPreview({ result }) {
       </p>
       <audio className="preview-player" controls src={result.url} />
       <a className="download-link" href={result.url} download={filename}>
-        下载录音文件（供后续上传测试）
+        下载本次录音
       </a>
     </section>
   );

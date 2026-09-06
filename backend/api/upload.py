@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 
@@ -52,7 +53,7 @@ async def upload(
     try:
         data = await _read_limited(file)
         part_path.write_bytes(data)
-        probe = probe_audio(part_path)
+        probe = await asyncio.to_thread(probe_audio, part_path)
         if (
             probe.duration_sec < settings.min_audio_seconds
             or probe.duration_sec > settings.max_audio_seconds

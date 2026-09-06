@@ -4,6 +4,7 @@ import httpx
 
 from config import BACKEND_DIR, settings
 from errors import AppError
+from services.http_ipv4 import ipv4_transport
 from services.extract_validate import (
     BusinessExtract,
     apply_page_defaults,
@@ -84,9 +85,11 @@ async def extract_meeting(text: str, page_city: str) -> BusinessExtract:
         "max_tokens": 800,
         "stream": False,
     }
-    timeout = httpx.Timeout(settings.extract_timeout_seconds, connect=10.0)
+    timeout = httpx.Timeout(settings.extract_timeout_seconds, connect=5.0)
     try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
+        async with httpx.AsyncClient(
+            timeout=timeout, transport=ipv4_transport()
+        ) as client:
             response = await client.post(
                 settings.deepseek_chat_url,
                 headers=headers,

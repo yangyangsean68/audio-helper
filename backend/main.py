@@ -12,11 +12,13 @@ from errors import AppError
 from schemas import ErrorDetail, ErrorResponse
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 app = FastAPI(
     title="语音约碰面地点",
     version="0.1.0",
-    description="当前提供健康检查、录音上传、语音识别与信息提取。",
+    description="当前提供健康检查、录音上传、语音识别、信息提取、碰面搜店、推荐语与语音播报。",
 )
 
 
@@ -25,13 +27,20 @@ def _request_id(request: Request) -> str:
 
 
 def _stage_from_path(path: str) -> str:
-    if path.rstrip("/").endswith("/extract"):
+    stripped = path.rstrip("/")
+    if "/audio/" in path or stripped.endswith("/audio"):
+        return "audio"
+    if stripped.endswith("/finalize"):
+        return "finalize"
+    if stripped.endswith("/search"):
+        return "search"
+    if stripped.endswith("/extract"):
         return "extract"
-    if path.rstrip("/").endswith("/asr"):
+    if stripped.endswith("/asr"):
         return "asr"
-    if path.rstrip("/").endswith("/upload"):
+    if stripped.endswith("/upload"):
         return "upload"
-    if path.rstrip("/").endswith("/health"):
+    if stripped.endswith("/health"):
         return "health"
     return "upload"
 

@@ -64,6 +64,88 @@ h1 {
   font: inherit;
 }
 
+.city-field input:disabled {
+  background: #f5f7fa;
+  color: #7b8794;
+}
+
+.status-block {
+  margin-bottom: 0.75rem;
+}
+
+.error-multiline {
+  white-space: pre-line;
+}
+
+.warning {
+  margin: 0.5rem 0 0;
+  color: #b54708;
+}
+
+.panel {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e4e7eb;
+}
+
+.panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.panel-body {
+  margin: 0;
+}
+
+.extract-list {
+  margin: 0;
+}
+
+.extract-list > div {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.extract-list dt {
+  color: #52606d;
+  font-weight: 600;
+}
+
+.extract-list dd {
+  margin: 0;
+}
+
+.shop-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.shop-list li {
+  margin-bottom: 0.85rem;
+}
+
+.shop-list p {
+  margin: 0.2rem 0 0;
+}
+
+.shop-distance {
+  color: #52606d;
+}
+
+.play-button {
+  margin-top: 0.75rem;
+  padding: 0.55rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  background: #1f4e79;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .record-button {
   display: block;
   width: 100%;
